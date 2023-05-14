@@ -1,12 +1,18 @@
 "use client";
 import Button from "@/app/components/Button";
 import Input from "@/app/components/inputs/Input";
+import { BsGithub, BsGoogle } from "react-icons/bs";
 import React, { useCallback, useState } from "react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
+import { signIn, useSession } from "next-auth/react";
+import AuthSocialButton from "./AuthSocialButton";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 type variant = "LOGIN" | "REGISTER";
 
 const AuthForm = () => {
+  const session = useSession()
   const [variant, setVariant] = useState<variant>("LOGIN");
   const [loading, setLoading] = useState(false);
 
@@ -30,23 +36,61 @@ const AuthForm = () => {
     },
   });
 
+  console.log(session);
+  
+
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setLoading(true);
-
     if (variant === "LOGIN") {
+      signIn("credentials", {
+        ...data,
+        redirect: false,
+      })
+        .then((res: any) => {
+          console.log(res);
+
+          if (res?.error) {
+            toast.error(res?.error);
+            setLoading(false);
+          }
+          if (res?.ok && !res?.error) {
+            toast.success("Logged In!");
+          }
+        })
+        .finally(() => setLoading(false));
     }
     if (variant === "REGISTER") {
+      if (data.name === "" || data.email === "" || data.password === "") {
+        toast.error("Please enter all the fields");
+        setLoading(false);
+      } else {
+        axios
+          .post("/api/register", data)
+          .catch(() => toast.error("Something went Wrong!"))
+          .finally(() => setLoading(false));
+      }
     }
   };
 
   const socialAction = (action: string) => {
     setLoading(true);
+    signIn(action, {
+      redirect: false,
+    }).then((res: any) => {
+      if (res?.error) {
+        toast.error("Invalid Credentials!");
+      }
+
+      if (res?.ok && !res?.error) {
+        toast.success("Logged In!");
+      }
+    }).finally(() => setLoading(false))
   };
 
   return (
     <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-        <form className="space-y-6"  onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
           {variant === "REGISTER" && (
             <Input
               label="Name"
@@ -63,11 +107,13 @@ const AuthForm = () => {
             id="password"
             errors={errors}
           />
-          <Button disabled={loading} fullWidth type="submit">{variant === "LOGIN" ? "Sign In" :  "Register"}</Button>
+          <Button disabled={loading} fullWidth type="submit">
+            {variant === "LOGIN" ? "Sign In" : "Register"}
+          </Button>
         </form>
         <div className="mt-6">
           <div className="relative">
-            <div 
+            <div
               className="
                 absolute 
                 inset-0 
@@ -85,17 +131,17 @@ const AuthForm = () => {
           </div>
 
           <div className="mt-6 flex gap-2">
-            {/* <AuthSocialButton 
-              icon={BsGithub} 
-              onClick={() => socialAction('github')} 
+            <AuthSocialButton
+              icon={BsGithub}
+              onClick={() => socialAction("github")}
             />
-            <AuthSocialButton 
-              icon={BsGoogle} 
-              onClick={() => socialAction('google')} 
-            /> */}
+            <AuthSocialButton
+              icon={BsGoogle}
+              onClick={() => socialAction("google")}
+            />
           </div>
         </div>
-        <div 
+        <div
           className="
             flex 
             gap-2 
@@ -107,13 +153,12 @@ const AuthForm = () => {
           "
         >
           <div>
-            {variant === 'LOGIN' ? 'New to Messenger?' : 'Already have an account?'} 
+            {variant === "LOGIN"
+              ? "New to Messenger?"
+              : "Already have an account?"}
           </div>
-          <div 
-            onClick={toggleVariant} 
-            className="underline cursor-pointer"
-          >
-            {variant === 'LOGIN' ? 'Create an account' : 'Login'}
+          <div onClick={toggleVariant} className="underline cursor-pointer">
+            {variant === "LOGIN" ? "Create an account" : "Login"}
           </div>
         </div>
       </div>

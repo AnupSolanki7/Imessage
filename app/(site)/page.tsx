@@ -7,7 +7,7 @@ export default function Home() {
     <main
       className="
       flex 
-      min-h-full 
+      h-[100vh] 
       flex-col 
       justify-center 
       py-12 

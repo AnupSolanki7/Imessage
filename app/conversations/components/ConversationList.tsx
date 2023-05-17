@@ -6,11 +6,11 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { MdOutlineGroupAdd } from 'react-icons/md';
 import clsx from "clsx";
-// import { find, uniq } from 'lodash';
+import { find, uniq } from 'lodash';
 
 import useConversation from "@/app/hooks/useConversation";
-// import { pusherClient } from "@/app/libs/pusher";
-// import GroupChatModal from "@/app/components/modals/GroupChatModal";
+import { pusherClient } from "@/app/libs/pusher";
+import GroupChatModal from "@/app/components/modals/GroupChatModal";
 import ConversationBox from "./ConversationBox";
 import { FullConversationType } from "@/app/types";
 
@@ -41,7 +41,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
       return;
     }
 
-    // pusherClient.subscribe(pusherKey);
+    pusherClient.subscribe(pusherKey);
 
     const updateHandler = (conversation: FullConversationType) => {
       setItems((current) => current.map((currentConversation) => {
@@ -56,15 +56,15 @@ const ConversationList: React.FC<ConversationListProps> = ({
       }));
     }
 
-    // const newHandler = (conversation: FullConversationType) => {
-    //   setItems((current) => {
-    //     if (find(current, { id: conversation.id })) {
-    //       return current;
-    //     }
+    const newHandler = (conversation: FullConversationType) => {
+      setItems((current) => {
+        if (find(current, { id: conversation.id })) {
+          return current;
+        }
 
-    //     return [conversation, ...current]
-    //   });
-    // }
+        return [conversation, ...current]
+      });
+    }
 
     const removeHandler = (conversation: FullConversationType) => {
       setItems((current) => {
@@ -72,18 +72,18 @@ const ConversationList: React.FC<ConversationListProps> = ({
       });
     }
 
-    // pusherClient.bind('conversation:update', updateHandler)
-    // pusherClient.bind('conversation:new', newHandler)
-    // pusherClient.bind('conversation:remove', removeHandler)
+    pusherClient.bind('conversation:update', updateHandler)
+    pusherClient.bind('conversation:new', newHandler)
+    pusherClient.bind('conversation:remove', removeHandler)
   }, [pusherKey, router]);
 
   return (
     <>
-      {/* <GroupChatModal 
+      <GroupChatModal 
         users={users} 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
-      /> */}
+      />
       <aside className={clsx(`
         fixed 
         inset-y-0 

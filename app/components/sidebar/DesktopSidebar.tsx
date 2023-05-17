@@ -1,7 +1,7 @@
 "use client";
 
 import useRoutes from "@/app/hooks/useRoutes";
-// import SettingsModal from "./SettingsModal";
+import SettingsModal from "./SettingsModal";
 import { useState } from "react";
 import Avatar from "../Avatar";
 
@@ -19,7 +19,7 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({currentUser}) => {
 
   return (
     <>
-      {/* <SettingsModal currentUser={currentUser} isOpen={isOpen} onClose={() => setIsOpen(false)} /> */}
+      <SettingsModal currentUser={currentUser} isOpen={isOpen} onClose={() => setIsOpen(false)} />
       <div
         className="
         hidden 
